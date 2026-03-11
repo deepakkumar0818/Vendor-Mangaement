@@ -1,9 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import pandas as pd
 import io
+from typing import List, Optional
 
 from vendor_price_ranker import rank_vendors
+from vendor_predictor import get_predictor
 
 app = FastAPI(title="Vendor Management API")
 
@@ -41,4 +44,34 @@ async def rank_vendors_api(file: UploadFile = File(...)):
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    return result
+
+
+# ── Smart Quote: ML-based vendor prediction ───────────────────────────────────
+
+class QuoteItem(BaseModel):
+    description:  str
+    brand:        Optional[str] = ""
+    specs:        Optional[str] = ""
+    unit:         Optional[str] = "Nos"
+    qty:          float
+    target_price: float
+    gst:          Optional[float] = 18.0
+
+
+class QuoteRequest(BaseModel):
+    items: List[QuoteItem]
+
+
+@app.post("/api/smart-quote")
+def smart_quote(request: QuoteRequest):
+    """
+    Accepts a list of items with target prices.
+    ML model predicts Vendor A/B/C prices, lead times, and rankings.
+    """
+    if not request.items:
+        raise HTTPException(status_code=400, detail="No items provided.")
+
+    predictor = get_predictor()
+    result    = predictor.predict([item.dict() for item in request.items])
     return result
