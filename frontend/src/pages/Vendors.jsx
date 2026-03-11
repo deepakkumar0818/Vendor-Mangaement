@@ -43,6 +43,47 @@ const EDIT_FIELDS = [
     { label: 'GST / Tax ID',  name: 'gstId',    type: 'text'  },
 ];
 
+function VendorModal({ editVendor, form, setForm, handleSave, saving, onClose }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <h2 className="text-lg font-bold text-gray-800">{editVendor ? 'Edit Vendor' : 'Create New Vendor'}</h2>
+                    <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={18} /></button>
+                </div>
+                <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
+                    {EDIT_FIELDS.map(f => (
+                        <div key={f.name}>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                            <input
+                                name={f.name} type={f.type} value={form[f.name]} required={f.name === 'name'}
+                                onChange={e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))}
+                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-300"
+                            />
+                        </div>
+                    ))}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Classification</label>
+                        <select
+                            name="classification" value={form.classification}
+                            onChange={e => setForm(p => ({ ...p, classification: e.target.value }))}
+                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700"
+                        >
+                            {['Preferred', 'Regular', 'Monitor'].map(c => <option key={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex gap-3 pt-1">
+                        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-60 flex items-center justify-center gap-2">
+                            {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : editVendor ? 'Save Changes' : 'Create Vendor'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
 export default function Vendors() {
     const { vendors, dataLoading, addVendor, updateVendor, deleteVendor } = useAppData();
 
@@ -118,45 +159,6 @@ export default function Vendors() {
         >
             <span className="flex items-center gap-1">{label} <SortIcon col={key} /></span>
         </th>
-    );
-
-    const VendorModal = ({ onClose }) => (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <h2 className="text-lg font-bold text-gray-800">{editVendor ? 'Edit Vendor' : 'Create New Vendor'}</h2>
-                    <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={18} /></button>
-                </div>
-                <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
-                    {EDIT_FIELDS.map(f => (
-                        <div key={f.name}>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
-                            <input
-                                name={f.name} type={f.type} value={form[f.name]} required={f.name === 'name'}
-                                onChange={e => setForm(p => ({ ...p, [e.target.name]: e.target.value }))}
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder-gray-300"
-                            />
-                        </div>
-                    ))}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Classification</label>
-                        <select
-                            name="classification" value={form.classification}
-                            onChange={e => setForm(p => ({ ...p, classification: e.target.value }))}
-                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700"
-                        >
-                            {['Preferred', 'Regular', 'Monitor'].map(c => <option key={c}>{c}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex gap-3 pt-1">
-                        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-60 flex items-center justify-center gap-2">
-                            {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : editVendor ? 'Save Changes' : 'Create Vendor'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
     );
 
     return (
@@ -291,10 +293,10 @@ export default function Vendors() {
             </div>
 
             {/* Create Modal */}
-            {showCreate && <VendorModal onClose={() => setShowCreate(false)} />}
+            {showCreate && <VendorModal editVendor={null} form={form} setForm={setForm} handleSave={handleSave} saving={saving} onClose={() => setShowCreate(false)} />}
 
             {/* Edit Modal */}
-            {editVendor && <VendorModal onClose={() => setEditVendor(null)} />}
+            {editVendor && <VendorModal editVendor={editVendor} form={form} setForm={setForm} handleSave={handleSave} saving={saving} onClose={() => setEditVendor(null)} />}
 
             {/* Delete Confirm */}
             {deleteTarget && (
