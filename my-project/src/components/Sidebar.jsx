@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, BarChart3, Award, Users, GitCompare, LineChart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart3, Award, Users, GitCompare, LineChart, Star, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 
 const menuItems = [
     { path: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/vendors',            icon: Users,           label: 'Vendor Master' },
     { path: '/quotes',             icon: FileText,        label: 'RFQ & Quotes' },
+    { path: '/smart-quote',        icon: ShoppingCart,    label: 'Smart Quote Finder' },
     { path: '/price-comparison',   icon: GitCompare,      label: 'Price Comparison' },
     { path: '/performance',        icon: BarChart3,       label: 'Performance' },
     { path: '/scorecard',          icon: Award,           label: 'Scorecards' },

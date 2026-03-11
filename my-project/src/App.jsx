@@ -18,6 +18,7 @@ import Performance      from './pages/Performance';
 import Scorecard        from './pages/Scorecard';
 import PreferredVendors from './pages/PreferredVendors';
 import Analytics        from './pages/Analytics';
+import SmartQuote       from './pages/SmartQuote';
 
 function AppRoutes() {
     const { isAuthenticated } = useAuth();
@@ -46,6 +47,7 @@ function AppRoutes() {
                 <Route path="/scorecard"         element={<ProtectedRoute><AppLayout><Scorecard /></AppLayout></ProtectedRoute>} />
                 <Route path="/preferred-vendors" element={<ProtectedRoute><AppLayout><PreferredVendors /></AppLayout></ProtectedRoute>} />
                 <Route path="/analytics"         element={<ProtectedRoute><AppLayout><Analytics /></AppLayout></ProtectedRoute>} />
+                <Route path="/smart-quote"       element={<ProtectedRoute><AppLayout><SmartQuote /></AppLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<div className="pt-16 p-20 text-center text-2xl text-gray-400">404 – Page not found</div>} />
             </Routes>
