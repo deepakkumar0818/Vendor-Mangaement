@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Plus, Trash2, Trophy, ChevronRight, RotateCcw,
-    Pencil, Loader2, AlertCircle, Medal, PackageX
+    Pencil, Loader2, AlertCircle, Medal, PackageX, Search
 } from 'lucide-react';
 
 const UNITS     = ['Nos', 'Kg', 'Ltrs', 'Pcs', 'Box', 'Set', 'Mtr', 'Sqft'];
 const GST_RATES = [0, 5, 12, 18, 28];
-const API_URL   = 'http://localhost:8000/api/smart-quote';
+const API_URL        = 'http://localhost:8000/api/smart-quote';
+const PRODUCTS_URL   = 'http://localhost:8000/api/products';
 
 const COLORS = [
     { bg: 'bg-indigo-50',  text: 'text-indigo-700',  header: 'bg-indigo-600',  badge: 'bg-indigo-100 text-indigo-700',  dot: 'bg-indigo-500',  border: 'border-indigo-200'  },
@@ -37,12 +38,80 @@ const TSelect = ({ value, onChange, options }) => (
     </select>
 );
 
+// ── Autocomplete input for Item Description ───────────────────────────────────
+function ItemSearchInput({ value, onChange, catalogItems }) {
+    const [open, setOpen]     = useState(false);
+    const [query, setQuery]   = useState(value);
+    const wrapRef             = useRef(null);
+
+    // Close on outside click
+    useEffect(() => {
+        const handler = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const suggestions = query.trim()
+        ? catalogItems.filter(n => n.toLowerCase().includes(query.toLowerCase()))
+        : catalogItems;
+
+    const select = name => { setQuery(name); onChange(name); setOpen(false); };
+
+    return (
+        <div ref={wrapRef} className="relative">
+            <div className="flex items-center gap-1 focus-within:bg-blue-50 rounded px-1.5 py-1">
+                <Search size={11} className="text-gray-300 shrink-0" />
+                <input
+                    type="text"
+                    value={query}
+                    placeholder="Search or type item…"
+                    onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+                    onFocus={() => setOpen(true)}
+                    className="w-full bg-transparent text-xs text-gray-700 placeholder-gray-300 outline-none"
+                />
+            </div>
+            {open && suggestions.length > 0 && (
+                <div className="absolute z-50 left-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                    <p className="px-3 py-1.5 text-[10px] text-gray-400 font-semibold uppercase tracking-wide border-b border-gray-100">
+                        {suggestions.length} item{suggestions.length !== 1 ? 's' : ''} available from vendors
+                    </p>
+                    <div className="max-h-48 overflow-y-auto">
+                        {suggestions.map(name => (
+                            <button key={name} onMouseDown={() => select(name)}
+                                className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-gray-50 last:border-0">
+                                {name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {open && suggestions.length === 0 && query.trim() && (
+                <div className="absolute z-50 left-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl px-3 py-3 text-xs text-gray-400">
+                    No vendor has listed "<span className="font-semibold text-gray-600">{query}</span>" yet.
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function SmartQuote() {
-    const [rows,    setRows]    = useState([emptyRow()]);
-    const [results, setResults] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error,   setError]   = useState('');
-    const [step,    setStep]    = useState(1);
+    const [rows,         setRows]         = useState([emptyRow()]);
+    const [results,      setResults]      = useState(null);
+    const [loading,      setLoading]      = useState(false);
+    const [error,        setError]        = useState('');
+    const [step,         setStep]         = useState(1);
+    const [catalogItems, setCatalogItems] = useState([]);
+
+    // Load all vendor product names on mount
+    useEffect(() => {
+        fetch(PRODUCTS_URL)
+            .then(r => r.json())
+            .then(data => {
+                const names = [...new Set((data.products || []).map(p => p.item_description))].sort();
+                setCatalogItems(names);
+            })
+            .catch(() => {}); // silently fail — user can still type manually
+    }, []);
 
     const updateRow = (id, field, val) =>
         setRows(rs => rs.map(r => r.id === id ? { ...r, [field]: val } : r));
@@ -121,7 +190,11 @@ export default function SmartQuote() {
                                 <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-2 py-2 text-center text-gray-400 font-semibold border-r border-gray-100">{idx + 1}</td>
                                     <td className="px-2 py-2 border-r border-gray-100">
-                                        <TInput value={row.item_description} onChange={v => updateRow(row.id, 'item_description', v)} placeholder="e.g. UPS, Ceiling Fan..." />
+                                        <ItemSearchInput
+                                            value={row.item_description}
+                                            onChange={v => updateRow(row.id, 'item_description', v)}
+                                            catalogItems={catalogItems}
+                                        />
                                     </td>
                                     <td className="px-2 py-2 border-r border-gray-100">
                                         <TInput value={row.preferred_brand} onChange={v => updateRow(row.id, 'preferred_brand', v)} placeholder="e.g. APC, Havells" />
