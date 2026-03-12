@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"taskkill /F /PID 42744 2>&1\")",
+      "Bash(cmd /c \"tasklist | findstr python\")"
+    ]
+  }
+}
