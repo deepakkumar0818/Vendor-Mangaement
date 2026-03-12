@@ -10,16 +10,19 @@ import Features        from './pages/Features';
 import Contact         from './pages/Contact';
 import LoginPage       from './pages/Login';
 
-import Dashboard        from './pages/Dashboard';
-import Vendors          from './pages/Vendors';
-import Quotes           from './pages/Quotes';
-import PriceComparison  from './pages/PriceComparison';
-import Performance      from './pages/Performance';
-import Scorecard        from './pages/Scorecard';
-import PreferredVendors from './pages/PreferredVendors';
-import Analytics        from './pages/Analytics';
-import SmartQuote       from './pages/SmartQuote';
-import VendorPortal     from './pages/VendorPortal';
+import Dashboard          from './pages/Dashboard';
+import Vendors            from './pages/Vendors';
+import Quotes             from './pages/Quotes';
+import PriceComparison    from './pages/PriceComparison';
+import Performance        from './pages/Performance';
+import Scorecard          from './pages/Scorecard';
+import PreferredVendors   from './pages/PreferredVendors';
+import Analytics          from './pages/Analytics';
+import SmartQuote         from './pages/SmartQuote';
+import VendorPortal       from './pages/VendorPortal';
+import VendorMarketplace  from './pages/VendorMarketplace';
+import VendorResponses    from './pages/VendorResponses';
+import Reviews            from './pages/Reviews';
 
 function AppRoutes() {
     const { isAuthenticated } = useAuth();
@@ -48,8 +51,11 @@ function AppRoutes() {
                 <Route path="/scorecard"         element={<ProtectedRoute><AppLayout><Scorecard /></AppLayout></ProtectedRoute>} />
                 <Route path="/preferred-vendors" element={<ProtectedRoute><AppLayout><PreferredVendors /></AppLayout></ProtectedRoute>} />
                 <Route path="/analytics"         element={<ProtectedRoute><AppLayout><Analytics /></AppLayout></ProtectedRoute>} />
-                <Route path="/smart-quote"       element={<ProtectedRoute><AppLayout><SmartQuote /></AppLayout></ProtectedRoute>} />
-                <Route path="/vendor-portal"     element={<ProtectedRoute><AppLayout><VendorPortal /></AppLayout></ProtectedRoute>} />
+                <Route path="/smart-quote"         element={<ProtectedRoute><AppLayout><SmartQuote /></AppLayout></ProtectedRoute>} />
+                <Route path="/vendor-portal"       element={<ProtectedRoute><AppLayout><VendorPortal /></AppLayout></ProtectedRoute>} />
+                <Route path="/vendor-marketplace"  element={<ProtectedRoute><AppLayout><VendorMarketplace /></AppLayout></ProtectedRoute>} />
+                <Route path="/vendor-responses"    element={<ProtectedRoute><AppLayout><VendorResponses /></AppLayout></ProtectedRoute>} />
+                <Route path="/reviews"             element={<ProtectedRoute><AppLayout><Reviews /></AppLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<div className="pt-16 p-20 text-center text-2xl text-gray-400">404 – Page not found</div>} />
             </Routes>

@@ -30,6 +30,26 @@ const MOCK_ACTIVITY = [
     { action: 'Price comparison report generated',      time: '3 days ago',   type: 'report' },
 ];
 
+// ── Vendor-specific mock data ─────────────────────────────────────────────────
+const MOCK_VENDOR_STATS = {
+    rfqsReceived:         18,
+    quotationsSubmitted:  14,
+    ordersWon:             9,
+    revenue:          '₹18.4 L',
+    performanceRating:   4.6,
+    conversionRate:       '64%',
+    avgResponseTime:      '3.2 hrs',
+    pendingRFQs:           4,
+};
+
+const MOCK_VENDOR_ACTIVITY = [
+    { action: 'New RFQ #1043 received from Acme Corp',         time: '1 hour ago',   type: 'rfq'    },
+    { action: 'Quotation for RFQ-1041 submitted successfully', time: '4 hours ago',  type: 'quote'  },
+    { action: 'Order #ORD-2094 confirmed — delivery in 5 days',time: 'Yesterday',    type: 'vendor' },
+    { action: 'RFQ #1040 from BuildMore Inc. received',        time: '2 days ago',   type: 'rfq'    },
+    { action: 'Payment received for Order #ORD-2089',          time: '3 days ago',   type: 'score'  },
+];
+
 const MOCK_ANALYTICS = {
     kpis: [
         { label: 'Total Spend YTD',   value: '₹4.2 Cr',  change: '+12%',              up: true,  pct: 72, color: 'indigo'  },
@@ -78,6 +98,8 @@ export function AppDataProvider({ children }) {
     const [quotes,         setQuotes]         = useState([]);
     const [recentActivity, setRecentActivity] = useState([]);
     const [analyticsData,  setAnalyticsData]  = useState(null);
+    const [vendorStats,    setVendorStats]    = useState(null);
+    const [vendorActivity, setVendorActivity] = useState([]);
     const [dataLoading,    setDataLoading]    = useState(false);
     const [uploadStatus,   setUploadStatus]   = useState(null); // null | 'uploading' | 'success' | 'error'
 
@@ -102,6 +124,8 @@ export function AppDataProvider({ children }) {
             setQuotes(MOCK_QUOTES);
             setRecentActivity(MOCK_ACTIVITY);
             setAnalyticsData(MOCK_ANALYTICS);
+            setVendorStats(MOCK_VENDOR_STATS);
+            setVendorActivity(MOCK_VENDOR_ACTIVITY);
         } catch (err) {
             console.error('Failed to fetch data:', err);
         } finally {
@@ -115,6 +139,8 @@ export function AppDataProvider({ children }) {
         setQuotes([]);
         setRecentActivity([]);
         setAnalyticsData(null);
+        setVendorStats(null);
+        setVendorActivity([]);
         setUploadStatus(null);
     }, []);
 
@@ -188,6 +214,7 @@ export function AppDataProvider({ children }) {
     return (
         <AppDataContext.Provider value={{
             vendors, quotes, recentActivity, analyticsData,
+            vendorStats, vendorActivity,
             dataLoading, uploadStatus, dashboardStats,
             fetchAllData, resetData,
             addVendor, updateVendor, deleteVendor, uploadFile,

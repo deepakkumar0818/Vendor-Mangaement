@@ -1,23 +1,37 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, BarChart3, Award, Users, GitCompare, LineChart, Star, ChevronLeft, ChevronRight, ShoppingCart, Store } from 'lucide-react';
+import {
+    LayoutDashboard, FileText, BarChart3, Award, Users,
+    GitCompare, LineChart, Star, ChevronLeft, ChevronRight,
+    ShoppingCart, Store, Package, Truck, ClipboardList,
+    Building2, Inbox, MessageSquare,
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const menuItems = [
-    { path: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/vendors',            icon: Users,           label: 'Vendor Master' },
-    { path: '/vendor-portal',      icon: Store,           label: 'Vendor Portal' },
-    { path: '/quotes',             icon: FileText,        label: 'RFQ & Quotes' },
-    { path: '/smart-quote',        icon: ShoppingCart,    label: 'Smart Quote Finder' },
-    { path: '/price-comparison',   icon: GitCompare,      label: 'Price Comparison' },
-    { path: '/performance',        icon: BarChart3,       label: 'Performance' },
-    { path: '/scorecard',          icon: Award,           label: 'Scorecards' },
-    { path: '/preferred-vendors',  icon: Star,            label: 'Preferred Vendors' },
-    { path: '/analytics',          icon: LineChart,       label: 'Analytics' },
+const CLIENT_MENU = [
+    { path: '/dashboard',           icon: LayoutDashboard, label: 'Dashboard'          },
+    { path: '/vendor-marketplace',  icon: Building2,       label: 'Vendor Marketplace' },
+    { path: '/quotes',              icon: FileText,        label: 'RFQ Requests'       },
+    { path: '/vendor-responses',    icon: Inbox,           label: 'Vendor Responses'   },
+    { path: '/price-comparison',    icon: GitCompare,      label: 'Vendor Comparison'  },
+    { path: '/analytics',           icon: LineChart,       label: 'Analytics'          },
+    { path: '/reviews',             icon: MessageSquare,   label: 'Reviews'            },
+];
+
+const VENDOR_MENU = [
+    { path: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard'            },
+    { path: '/vendor-portal',      icon: Package,         label: 'My Products'          },
+    { path: '/quotes',             icon: ClipboardList,   label: 'RFQ Inbox'            },
+    { path: '/performance',        icon: BarChart3,       label: 'Performance'          },
+    { path: '/analytics',          icon: LineChart,       label: 'Analytics'            },
 ];
 
 function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
+    const { user } = useAuth();
+
+    const menuItems = user?.userRole === 'vendor' ? VENDOR_MENU : CLIENT_MENU;
 
     return (
         <aside className={`
@@ -27,6 +41,20 @@ function Sidebar() {
             ${collapsed ? 'w-16' : 'w-60'}
         `}>
             <div className="flex flex-col h-full">
+                {/* Role badge */}
+                {!collapsed && user && (
+                    <div className="px-4 pt-3 pb-2">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            user.userRole === 'vendor'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                        }`}>
+                            {user.userRole === 'vendor' ? <Store size={11} /> : <Users size={11} />}
+                            {user.userRole === 'vendor' ? 'Vendor Portal' : 'Client Portal'}
+                        </span>
+                    </div>
+                )}
+
                 <div className="flex justify-end p-2 border-b border-gray-100">
                     <button
                         onClick={() => setCollapsed(!collapsed)}

@@ -23,20 +23,17 @@ export function AuthProvider({ children }) {
         setAuthLoading(false);
     }, []);
 
-    const login = async (email, password) => {
-        // TODO: Replace mock with real API call
-        // const res = await axios.post('/api/auth/login', { email, password });
-        // const { token, user } = res.data;
-
+    const login = async (email, password, userRole = 'client') => {
         if (!email || !password) throw new Error('Email and password are required');
-        await new Promise(r => setTimeout(r, 700)); // simulate network
+        await new Promise(r => setTimeout(r, 700));
 
         const mockUser = {
             _id: 'u_' + email.replace(/[^a-z0-9]/gi, '').toLowerCase(),
             name: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
             email,
             avatar: email.charAt(0).toUpperCase(),
-            role: 'Procurement Manager',
+            userRole,
+            role: userRole === 'vendor' ? 'Vendor Partner' : 'Procurement Manager',
             createdAt: new Date().toISOString(),
         };
         const mockToken = 'vms_jwt_' + Date.now();
@@ -48,20 +45,17 @@ export function AuthProvider({ children }) {
         return { user: mockUser, token: mockToken };
     };
 
-    const register = async (name, email, password) => {
-        // TODO: Replace mock with real API call
-        // const res = await axios.post('/api/auth/register', { name, email, password });
-        // const { token, user } = res.data;
-
+    const register = async (name, email, password, userRole = 'client') => {
         if (!name || !email || !password) throw new Error('All fields are required');
-        await new Promise(r => setTimeout(r, 900)); // simulate network
+        await new Promise(r => setTimeout(r, 900));
 
         const mockUser = {
             _id: 'u_' + email.replace(/[^a-z0-9]/gi, '').toLowerCase(),
             name,
             email,
             avatar: name.charAt(0).toUpperCase(),
-            role: 'Procurement Manager',
+            userRole,
+            role: userRole === 'vendor' ? 'Vendor Partner' : 'Procurement Manager',
             createdAt: new Date().toISOString(),
         };
         const mockToken = 'vms_jwt_' + Date.now();

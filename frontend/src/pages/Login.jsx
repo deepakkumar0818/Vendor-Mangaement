@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, ShieldCheck, Store, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppData } from '../context/AppDataContext';
 
 export default function LoginPage() {
     const [tab,          setTab]          = useState('login');
+    const [role,         setRole]         = useState('client');
     const [form,         setForm]         = useState({ name: '', email: '', password: '', confirm: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading,      setLoading]      = useState(false);
@@ -33,8 +34,8 @@ export default function LoginPage() {
         setLoading(true);
         try {
             const result = tab === 'login'
-                ? await login(form.email, form.password)
-                : await register(form.name, form.email, form.password);
+                ? await login(form.email, form.password, role)
+                : await register(form.name, form.email, form.password, role);
             await fetchAllData(result.user._id);
             navigate('/dashboard');
         } catch (err) {
@@ -80,6 +81,37 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-8 space-y-5">
+
+                        {/* Role selector */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('client')}
+                                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                                        role === 'client'
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <Building2 size={17} />
+                                    Client / Buyer
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRole('vendor')}
+                                    className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                                        role === 'vendor'
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <Store size={17} />
+                                    Vendor / Supplier
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Name field (register only) */}
                         {tab === 'register' && (
