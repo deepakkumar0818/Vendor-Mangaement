@@ -33,10 +33,11 @@ export default function LoginPage() {
         }
         setLoading(true);
         try {
+            // On login, backend auto-returns role — no need to pass it
             const result = tab === 'login'
-                ? await login(form.email, form.password, role)
+                ? await login(form.email, form.password)
                 : await register(form.name, form.email, form.password, role);
-            await fetchAllData(result.user._id);
+            await fetchAllData();
             navigate('/dashboard');
         } catch (err) {
             setError(err.message || 'Something went wrong. Please try again.');
@@ -82,8 +83,8 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit} className="p-8 space-y-5">
 
-                        {/* Role selector */}
-                        <div>
+                        {/* Role selector — only on register tab; login returns role from backend */}
+                        {tab === 'register' && <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
@@ -111,7 +112,7 @@ export default function LoginPage() {
                                     Vendor / Supplier
                                 </button>
                             </div>
-                        </div>
+                        </div>}
 
                         {/* Name field (register only) */}
                         {tab === 'register' && (

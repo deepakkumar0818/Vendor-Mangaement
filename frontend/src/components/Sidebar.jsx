@@ -20,8 +20,8 @@ const CLIENT_MENU = [
 
 const VENDOR_MENU = [
     { path: '/dashboard',          icon: LayoutDashboard, label: 'Dashboard'            },
-    { path: '/vendor-portal',      icon: Package,         label: 'My Products'          },
-    { path: '/quotes',             icon: ClipboardList,   label: 'RFQ Inbox'            },
+    { path: '/vendor-portal',      icon: Store,           label: 'My Profile'           },
+    { path: '/rfq-inbox',          icon: Inbox,           label: 'RFQ Inbox'            },
     { path: '/performance',        icon: BarChart3,       label: 'Performance'          },
     { path: '/analytics',          icon: LineChart,       label: 'Analytics'            },
 ];

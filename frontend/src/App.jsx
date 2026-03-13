@@ -20,6 +20,7 @@ import PreferredVendors   from './pages/PreferredVendors';
 import Analytics          from './pages/Analytics';
 import SmartQuote         from './pages/SmartQuote';
 import VendorPortal       from './pages/VendorPortal';
+import VendorRFQInbox     from './pages/VendorRFQInbox';
 import VendorMarketplace  from './pages/VendorMarketplace';
 import VendorResponses    from './pages/VendorResponses';
 import Reviews            from './pages/Reviews';
@@ -53,6 +54,7 @@ function AppRoutes() {
                 <Route path="/analytics"         element={<ProtectedRoute><AppLayout><Analytics /></AppLayout></ProtectedRoute>} />
                 <Route path="/smart-quote"         element={<ProtectedRoute><AppLayout><SmartQuote /></AppLayout></ProtectedRoute>} />
                 <Route path="/vendor-portal"       element={<ProtectedRoute><AppLayout><VendorPortal /></AppLayout></ProtectedRoute>} />
+                <Route path="/rfq-inbox"           element={<ProtectedRoute><AppLayout><VendorRFQInbox /></AppLayout></ProtectedRoute>} />
                 <Route path="/vendor-marketplace"  element={<ProtectedRoute><AppLayout><VendorMarketplace /></AppLayout></ProtectedRoute>} />
                 <Route path="/vendor-responses"    element={<ProtectedRoute><AppLayout><VendorResponses /></AppLayout></ProtectedRoute>} />
                 <Route path="/reviews"             element={<ProtectedRoute><AppLayout><Reviews /></AppLayout></ProtectedRoute>} />

@@ -9,10 +9,11 @@ export default function AppLayout({ children }) {
 
     // Auto-fetch user data when layout mounts (covers page refresh case)
     useEffect(() => {
-        if (user && vendors.length === 0 && !dataLoading) {
-            fetchAllData(user._id);
+        if (user && !dataLoading) {
+            fetchAllData();
         }
-    }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.userRole]);
 
     return (
         <div className="flex min-h-screen pt-[72px]">

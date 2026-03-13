@@ -2,15 +2,17 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
+const API = 'http://localhost:8000/api';
+
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null);
+    const [user,        setUser]        = useState(null);
+    const [token,       setToken]       = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
 
     // Restore session from localStorage on mount
     useEffect(() => {
         const savedToken = localStorage.getItem('vms_token');
-        const savedUser = localStorage.getItem('vms_user');
+        const savedUser  = localStorage.getItem('vms_user');
         if (savedToken && savedUser) {
             try {
                 setToken(savedToken);
@@ -23,50 +25,48 @@ export function AuthProvider({ children }) {
         setAuthLoading(false);
     }, []);
 
-    const login = async (email, password, userRole = 'client') => {
-        if (!email || !password) throw new Error('Email and password are required');
-        await new Promise(r => setTimeout(r, 700));
-
-        const mockUser = {
-            _id: 'u_' + email.replace(/[^a-z0-9]/gi, '').toLowerCase(),
-            name: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-            email,
-            avatar: email.charAt(0).toUpperCase(),
-            userRole,
-            role: userRole === 'vendor' ? 'Vendor Partner' : 'Procurement Manager',
-            createdAt: new Date().toISOString(),
-        };
-        const mockToken = 'vms_jwt_' + Date.now();
-
-        setUser(mockUser);
-        setToken(mockToken);
-        localStorage.setItem('vms_token', mockToken);
-        localStorage.setItem('vms_user', JSON.stringify(mockUser));
-        return { user: mockUser, token: mockToken };
+    const _saveSession = (userData, tokenValue) => {
+        setUser(userData);
+        setToken(tokenValue);
+        localStorage.setItem('vms_token', tokenValue);
+        localStorage.setItem('vms_user', JSON.stringify(userData));
     };
 
+    // ── Register ────────────────────────────────────────────────────────────
     const register = async (name, email, password, userRole = 'client') => {
         if (!name || !email || !password) throw new Error('All fields are required');
-        await new Promise(r => setTimeout(r, 900));
 
-        const mockUser = {
-            _id: 'u_' + email.replace(/[^a-z0-9]/gi, '').toLowerCase(),
-            name,
-            email,
-            avatar: name.charAt(0).toUpperCase(),
-            userRole,
-            role: userRole === 'vendor' ? 'Vendor Partner' : 'Procurement Manager',
-            createdAt: new Date().toISOString(),
-        };
-        const mockToken = 'vms_jwt_' + Date.now();
+        const res = await fetch(`${API}/auth/register`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ name, email, password, userRole }),
+        });
 
-        setUser(mockUser);
-        setToken(mockToken);
-        localStorage.setItem('vms_token', mockToken);
-        localStorage.setItem('vms_user', JSON.stringify(mockUser));
-        return { user: mockUser, token: mockToken };
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Registration failed.');
+
+        _saveSession(data.user, data.token);
+        return data;
     };
 
+    // ── Login ────────────────────────────────────────────────────────────────
+    const login = async (email, password) => {
+        if (!email || !password) throw new Error('Email and password are required');
+
+        const res = await fetch(`${API}/auth/login`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed.');
+
+        _saveSession(data.user, data.token);
+        return data;
+    };
+
+    // ── Logout ───────────────────────────────────────────────────────────────
     const logout = () => {
         setUser(null);
         setToken(null);
@@ -74,15 +74,24 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('vms_user');
     };
 
+    // ── Authenticated fetch helper ────────────────────────────────────────────
+    const authFetch = (url, options = {}) => {
+        const t = token || localStorage.getItem('vms_token');
+        return fetch(url, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(t ? { Authorization: `Bearer ${t}` } : {}),
+                ...(options.headers || {}),
+            },
+        });
+    };
+
     return (
         <AuthContext.Provider value={{
-            user,
-            token,
-            authLoading,
+            user, token, authLoading,
             isAuthenticated: !!user,
-            login,
-            register,
-            logout,
+            login, register, logout, authFetch,
         }}>
             {children}
         </AuthContext.Provider>
