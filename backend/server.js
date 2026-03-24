@@ -8,14 +8,12 @@ const multer    = require('multer');
 const XLSX      = require('xlsx');
 const connectDB = require('./config/db');
 
-// ── New MongoDB routes ────────────────────────────────────────────────────────
 const authRoutes    = require('./routes/auth');
 const vendorsRoutes = require('./routes/vendors');
 const vendorRoutes  = require('./routes/vendor');
 const rfqRoutes     = require('./routes/rfq');
 const clientRoutes  = require('./routes/client');
 
-// ── Legacy SQLite (optional — skipped if node:sqlite not available) ───────────
 let upsertVendorCatalog, queryProducts, listAllVendors;
 let sqliteReady = false;
 try {
@@ -35,10 +33,8 @@ try {
     console.warn('⚠️  rankVendors disabled:', e.message);
 }
 
-// ── Connect to MongoDB ────────────────────────────────────────────────────────
 connectDB();
 
-// ── Express app ───────────────────────────────────────────────────────────────
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -47,14 +43,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (_req, res) => res.json({ message: 'VMS API v2.0 running' }));
 
-// ── New API routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth',    authRoutes);
 app.use('/api/vendors', vendorsRoutes);
 app.use('/api/vendor',  vendorRoutes);
 app.use('/api/rfq',     rfqRoutes);
 app.use('/api/client',  clientRoutes);
 
-// ── Legacy SQLite routes (rank-vendors, catalog, products, smart-quote) ───────
 if (rankVendors) {
     const upload = multer({ storage: multer.memoryStorage() });
     app.post('/api/rank-vendors', upload.single('file'), (req, res) => {

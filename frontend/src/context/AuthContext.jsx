@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -9,20 +9,37 @@ export function AuthProvider({ children }) {
     const [token,       setToken]       = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
 
-    // Restore session from localStorage on mount
+    const _clearSession = () => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('vms_token');
+        localStorage.removeItem('vms_user');
+    };
+
+    // Restore session from localStorage on mount — validate with server
     useEffect(() => {
         const savedToken = localStorage.getItem('vms_token');
         const savedUser  = localStorage.getItem('vms_user');
         if (savedToken && savedUser) {
-            try {
-                setToken(savedToken);
-                setUser(JSON.parse(savedUser));
-            } catch {
-                localStorage.removeItem('vms_token');
-                localStorage.removeItem('vms_user');
-            }
+            // Verify token is still valid before trusting it
+            fetch(`${API}/auth/me`, {
+                headers: { Authorization: `Bearer ${savedToken}` },
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Token invalid');
+                    return res.json();
+                })
+                .then(data => {
+                    setToken(savedToken);
+                    setUser(data.user || JSON.parse(savedUser));
+                })
+                .catch(() => {
+                    _clearSession();
+                })
+                .finally(() => setAuthLoading(false));
+        } else {
+            setAuthLoading(false);
         }
-        setAuthLoading(false);
     }, []);
 
     const _saveSession = (userData, tokenValue) => {
@@ -67,17 +84,12 @@ export function AuthProvider({ children }) {
     };
 
     // ── Logout ───────────────────────────────────────────────────────────────
-    const logout = () => {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem('vms_token');
-        localStorage.removeItem('vms_user');
-    };
+    const logout = () => _clearSession();
 
     // ── Authenticated fetch helper ────────────────────────────────────────────
-    const authFetch = (url, options = {}) => {
+    const authFetch = useCallback(async (url, options = {}) => {
         const t = token || localStorage.getItem('vms_token');
-        return fetch(url, {
+        const res = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -85,7 +97,12 @@ export function AuthProvider({ children }) {
                 ...(options.headers || {}),
             },
         });
-    };
+        // Auto-logout on any 401 so stale/expired tokens don't leave users stuck
+        if (res.status === 401) {
+            _clearSession();
+        }
+        return res;
+    }, [token]);
 
     return (
         <AuthContext.Provider value={{

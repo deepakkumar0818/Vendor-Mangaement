@@ -3,8 +3,10 @@ const Product       = require('../models/Product');
 const RFQ           = require('../models/RFQ');
 const RFQResponse   = require('../models/RFQResponse');
 const Rating        = require('../models/Rating');
+const User          = require('../models/User');
 const multer        = require('multer');
 const path          = require('path');
+const { confirmQuoteToVendor, notifyClientOfResponse } = require('../services/emailService');
 
 // ── File upload config ────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -216,6 +218,29 @@ const respondToRFQ = async (req, res) => {
             price, discount, deliveryTime, deliveryCharges,
             message, paymentTerms, warranty,
         });
+
+        // ── Fire emails (non-blocking) ────────────────────────────────────────
+        const quoteData = { price, discount, deliveryTime, deliveryCharges, paymentTerms, warranty };
+
+        // 1. Confirm to vendor that their quote was submitted
+        confirmQuoteToVendor(
+            { name: req.user.name, email: req.user.email },
+            { rfqNumber: rfq.rfqNumber, productName: rfq.productName, category: rfq.category },
+            quoteData
+        ).catch(err => console.error('confirmQuoteToVendor error:', err.message));
+
+        // 2. Notify client that a new quote arrived
+        User.findById(rfq.clientId).select('name email').then(async clientUser => {
+            if (!clientUser) return;
+            const totalQuotes = await RFQResponse.countDocuments({ rfqId });
+            notifyClientOfResponse(
+                { name: clientUser.name, email: clientUser.email },
+                { name: req.user.name,   email: req.user.email   },
+                { rfqNumber: rfq.rfqNumber, productName: rfq.productName, category: rfq.category },
+                quoteData,
+                totalQuotes
+            ).catch(err => console.error('notifyClientOfResponse error:', err.message));
+        }).catch(err => console.error('Client lookup error:', err.message));
 
         return res.status(201).json({ response, message: 'Quotation submitted successfully.' });
     } catch (err) {

@@ -148,24 +148,92 @@ const getComparison = async (req, res) => {
         const responses = await RFQResponse.find({ rfqId: rfq._id })
             .populate('vendorId', 'name email');
 
-        if (!responses.length)
-            return res.json({ comparison: [], bests: null, recommended: null });
+        let enriched = [];
+        let dataSource = 'responses'; // track where data came from
 
-        const enriched = await Promise.all(responses.map(async (resp) => {
-            const profile = await VendorProfile.findOne({ userId: resp.vendorId._id });
-            return {
-                vendor:          resp.vendorId.name,
-                price:           resp.price,
-                discount:        resp.discount,
-                effectivePrice:  Math.round(resp.price * (1 - resp.discount / 100) + resp.deliveryCharges),
-                deliveryTime:    resp.deliveryTime,
-                deliveryCharges: resp.deliveryCharges,
-                rating:          profile?.avgRating || 0,
-                paymentTerms:    resp.paymentTerms,
-                warranty:        resp.warranty,
-                message:         resp.message,
-            };
-        }));
+        if (responses.length > 0) {
+            // ── Use actual RFQ responses ──────────────────────────────────────
+            enriched = await Promise.all(responses.map(async (resp) => {
+                const profile = await VendorProfile.findOne({ userId: resp.vendorId._id });
+                return {
+                    vendor:          resp.vendorId.name,
+                    price:           resp.price,
+                    discount:        resp.discount,
+                    effectivePrice:  Math.round(resp.price * (1 - resp.discount / 100) + resp.deliveryCharges),
+                    deliveryTime:    resp.deliveryTime,
+                    deliveryCharges: resp.deliveryCharges,
+                    rating:          profile?.avgRating || 0,
+                    paymentTerms:    resp.paymentTerms,
+                    warranty:        resp.warranty,
+                    message:         resp.message,
+                    fromCatalog:     false,
+                };
+            }));
+        } else {
+            // ── Fall back: pull from vendor product catalogs in this category ─
+            dataSource = 'catalog';
+            const Product = require('../models/Product');
+
+            // Find products whose category matches the RFQ category
+            const categoryRegex = new RegExp(rfq.category, 'i');
+            const catalogProducts = await Product.find({
+                category: categoryRegex,
+                isActive: true,
+            }).populate('vendorId', 'name email').limit(20);
+
+            // Also try matching by product name keywords if category products found < 3
+            let allProducts = catalogProducts;
+            if (catalogProducts.length < 3 && rfq.productName) {
+                const nameWords = rfq.productName.split(/\s+/).filter(w => w.length > 2);
+                const nameRegex = new RegExp(nameWords.join('|'), 'i');
+                const nameProducts = await Product.find({
+                    $or: [
+                        { productName: nameRegex },
+                        { category: categoryRegex },
+                    ],
+                    isActive: true,
+                    _id: { $nin: catalogProducts.map(p => p._id) },
+                }).populate('vendorId', 'name email').limit(10);
+                allProducts = [...catalogProducts, ...nameProducts];
+            }
+
+            // Group by vendor — pick best-matching product per vendor
+            const vendorMap = new Map();
+            for (const product of allProducts) {
+                const vid = product.vendorId._id.toString();
+                if (!vendorMap.has(vid)) {
+                    vendorMap.set(vid, product);
+                } else {
+                    // prefer product whose name is closer to rfq.productName
+                    const existing = vendorMap.get(vid);
+                    const rfqLower = rfq.productName.toLowerCase();
+                    const existScore = existing.productName.toLowerCase().includes(rfqLower) ? 1 : 0;
+                    const newScore   = product.productName.toLowerCase().includes(rfqLower) ? 1 : 0;
+                    if (newScore > existScore) vendorMap.set(vid, product);
+                }
+            }
+
+            enriched = await Promise.all([...vendorMap.values()].map(async (product) => {
+                const profile = await VendorProfile.findOne({ userId: product.vendorId._id });
+                return {
+                    vendor:          product.vendorId.name,
+                    price:           product.price,
+                    discount:        product.discount || 0,
+                    effectivePrice:  Math.round(product.price * (1 - (product.discount || 0) / 100) + (product.deliveryCharges || 0)),
+                    deliveryTime:    product.leadTime || '7',
+                    deliveryCharges: product.deliveryCharges || 0,
+                    rating:          profile?.avgRating || 0,
+                    paymentTerms:    'Net 30',
+                    warranty:        product.warranty || '',
+                    message:         '',
+                    fromCatalog:     true,
+                    productName:     product.productName,
+                };
+            }));
+
+            if (!enriched.length)
+                return res.json({ comparison: [], bests: null, recommended: null, dataSource });
+        }
 
         const sorted = [...enriched].sort((a, b) => a.effectivePrice - b.effectivePrice);
 
@@ -197,6 +265,7 @@ const getComparison = async (req, res) => {
             comparison: enriched,
             bests,
             recommended,
+            dataSource,
             rfq: { rfqNumber: rfq.rfqNumber, productName: rfq.productName, category: rfq.category },
         });
     } catch (err) {

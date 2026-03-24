@@ -5,6 +5,7 @@ import {
   ArrowRight, CheckCircle, TrendingUp, ShieldCheck, Zap, Globe,
   ChevronRight, Package, Clock, DollarSign, Target, Activity
 } from 'lucide-react';
+import AIAssistant from '../components/AIAssistant';
 
 const stats = [
   { end: 2400, format: n => n.toLocaleString() + '+', label: 'Vendors Managed'    },
@@ -153,6 +154,27 @@ const testimonials = [
     avatar: 'LH',
     color: 'bg-emerald-500',
     quote: 'Finally, a system that gives us full visibility into vendor performance. Our preferred vendor compliance went from 60% to 94%.',
+  },
+  {
+    name: 'Priya Sharma',
+    role: 'Procurement Head, TechBridge Solutions',
+    avatar: 'PS',
+    color: 'bg-blue-500',
+    quote: 'Setting up RFQs used to take hours of email back-and-forth. With VMS, we get structured quotes from 8 vendors in under 30 minutes.',
+  },
+  {
+    name: 'Michael Chen',
+    role: 'VP Operations, Horizon Manufacturing',
+    avatar: 'MC',
+    color: 'bg-teal-500',
+    quote: 'The analytics dashboard gave us clarity we never had before. We cut our preferred vendor list from 60 to 22 and quality improved overnight.',
+  },
+  {
+    name: 'Ananya Patel',
+    role: 'Supply Chain Manager, Brightway Group',
+    avatar: 'AP',
+    color: 'bg-rose-500',
+    quote: 'VMS paid for itself in the first month. We found a vendor offering 18% better pricing on our top raw material category alone.',
   },
 ];
 
@@ -531,30 +553,75 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ──────────────────────────────────── */}
-      <section className="bg-white py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-indigo-600 font-semibold text-sm uppercase tracking-widest">Customer Stories</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3">
-              Trusted by Procurement Leaders
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map(t => (
-              <div key={t.name} className="bg-gray-50 rounded-2xl p-8 border border-gray-100 flex flex-col">
-                <p className="text-gray-700 leading-relaxed flex-1 mb-6">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 ${t.color} rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0`}>
-                    {t.avatar}
+      {/* ── TESTIMONIALS (infinite marquee) ───────────────── */}
+      <section className="bg-white py-20 md:py-28 overflow-hidden">
+
+        <style>{`
+          @keyframes vms-marquee {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+          }
+          .vms-marquee-track {
+            display: flex;
+            width: max-content;
+            animation: vms-marquee 38s linear infinite;
+          }
+          .vms-marquee-track:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+
+        {/* header */}
+        <div className="max-w-7xl mx-auto px-6 text-center mb-14">
+          <span className="text-indigo-600 font-semibold text-sm uppercase tracking-widest">Customer Stories</span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-3">
+            Trusted by Procurement Leaders
+          </h2>
+          <p className="text-gray-400 mt-3 text-base">
+            Real results from real procurement teams around the world.
+          </p>
+        </div>
+
+        {/* marquee strip */}
+        <div className="relative">
+          {/* left fade */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-28 z-10"
+            style={{ background: 'linear-gradient(to right, #fff 40%, transparent)' }} />
+          {/* right fade */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-28 z-10"
+            style={{ background: 'linear-gradient(to left, #fff 40%, transparent)' }} />
+
+          <div className="overflow-hidden">
+            {/* duplicate the array so the loop is seamless */}
+            <div className="vms-marquee-track">
+              {[...testimonials, ...testimonials].map((t, i) => (
+                <div
+                  key={i}
+                  className="mx-3 w-80 shrink-0 bg-gray-50 rounded-2xl border border-gray-100 p-7 flex flex-col hover:shadow-lg hover:border-indigo-100 transition-all duration-300"
+                >
+                  {/* stars */}
+                  <div className="flex gap-0.5 mb-4">
+                    {[1,2,3,4,5].map(s => (
+                      <Star key={s} size={14} className="text-amber-400 fill-amber-400" />
+                    ))}
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.role}</p>
+
+                  <p className="text-gray-700 text-sm leading-relaxed flex-1 mb-6">
+                    "{t.quote}"
+                  </p>
+
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    <div className={`w-9 h-9 ${t.color} rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm leading-tight">{t.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 leading-tight">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -622,6 +689,7 @@ export default function Home() {
         </div>
       </footer>
 
+      <AIAssistant />
     </div>
   );
 }

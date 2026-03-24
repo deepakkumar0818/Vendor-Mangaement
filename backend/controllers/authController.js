@@ -1,6 +1,7 @@
 const jwt           = require('jsonwebtoken');
 const User          = require('../models/User');
 const VendorProfile = require('../models/VendorProfile');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,11 @@ const register = async (req, res) => {
         }
 
         const token = signToken(user._id);
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail({ name: user.name, email: user.email, userRole: user.userRole })
+            .catch(err => console.error('sendWelcomeEmail error:', err.message));
+
         return res.status(201).json({ token, user: formatUser(user) });
 
     } catch (err) {

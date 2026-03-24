@@ -8,25 +8,42 @@ const API = 'http://localhost:8000/api';
 // ── Static analytics placeholder (no dedicated analytics endpoint yet) ────────
 const BASE_ANALYTICS = {
     kpis: [
-        { label: 'Total Spend YTD',   value: '—', change: 'Live from DB',        up: true, pct: 0,  color: 'indigo'  },
-        { label: 'Active Vendors',    value: '—', change: 'Updates on register',  up: true, pct: 0,  color: 'emerald' },
-        { label: 'Avg. Vendor Score', value: '—', change: 'Based on ratings',     up: true, pct: 0,  color: 'amber'   },
-        { label: 'Cost Savings',      value: '—', change: 'From comparisons',     up: true, pct: 0,  color: 'violet'  },
+        { label: 'Total Spend YTD',   value: '₹ 3.02 Cr', change: '+12.4%',  up: true,  pct: 76, color: 'indigo'  },
+        { label: 'Active Vendors',    value: '24',         change: '+3 new',   up: true,  pct: 60, color: 'emerald' },
+        { label: 'Avg. Vendor Score', value: '79.4',       change: '+2.1 pts', up: true,  pct: 79, color: 'amber'   },
+        { label: 'Cost Savings',      value: '₹ 42 L',    change: '-5.3%',    up: false, pct: 52, color: 'violet'  },
     ],
-    monthlySpend:  [
-        { month: 'Oct', spend: 0 }, { month: 'Nov', spend: 0 },
-        { month: 'Dec', spend: 0 }, { month: 'Jan', spend: 0 },
-        { month: 'Feb', spend: 0 }, { month: 'Mar', spend: 0 },
+    monthlySpend: [
+        { month: 'Oct', spend: 42 },
+        { month: 'Nov', spend: 38 },
+        { month: 'Dec', spend: 55 },
+        { month: 'Jan', spend: 48 },
+        { month: 'Feb', spend: 62 },
+        { month: 'Mar', spend: 57 },
     ],
-    categorySpend: [],
-    scoreTrend:    [],
+    categorySpend: [
+        { category: 'Electronics',    spend: 85 },
+        { category: 'Machinery',      spend: 62 },
+        { category: 'Raw Materials',  spend: 48 },
+        { category: 'Logistics',      spend: 35 },
+        { category: 'Packaging',      spend: 28 },
+        { category: 'IT Services',    spend: 21 },
+    ],
+    scoreTrend: [
+        { month: 'Oct', preferred: 84, regular: 71, monitor: 57 },
+        { month: 'Nov', preferred: 86, regular: 73, monitor: 54 },
+        { month: 'Dec', preferred: 83, regular: 69, monitor: 61 },
+        { month: 'Jan', preferred: 88, regular: 74, monitor: 50 },
+        { month: 'Feb', preferred: 91, regular: 77, monitor: 47 },
+        { month: 'Mar', preferred: 89, regular: 76, monitor: 53 },
+    ],
     kpiTable: [
-        { metric: 'On-Time Delivery Rate',   target: '95%',  actual: '—', pct: 0, ok: true },
-        { metric: 'Quote Response Time',     target: '< 6h', actual: '—', pct: 0, ok: true },
-        { metric: 'Defect / Return Rate',    target: '< 1%', actual: '—', pct: 0, ok: true },
-        { metric: 'Order Fulfilment Rate',   target: '98%',  actual: '—', pct: 0, ok: true },
-        { metric: 'Preferred Vendor Usage',  target: '80%',  actual: '—', pct: 0, ok: true },
-        { metric: 'Cost Savings vs. Budget', target: '30%',  actual: '—', pct: 0, ok: true },
+        { metric: 'On-Time Delivery Rate',   target: '95%',   actual: '92%',  pct: 92,  ok: true  },
+        { metric: 'Quote Response Time',     target: '< 6h',  actual: '5.2h', pct: 87,  ok: true  },
+        { metric: 'Defect / Return Rate',    target: '< 1%',  actual: '1.3%', pct: 68,  ok: false },
+        { metric: 'Order Fulfilment Rate',   target: '98%',   actual: '96%',  pct: 96,  ok: true  },
+        { metric: 'Preferred Vendor Usage',  target: '80%',   actual: '74%',  pct: 74,  ok: false },
+        { metric: 'Cost Savings vs. Budget', target: '30%',   actual: '28%',  pct: 93,  ok: true  },
     ],
 };
 

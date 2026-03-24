@@ -70,6 +70,8 @@ export default function VendorResponses() {
     const responses   = comparison?.comparison || [];
     const bests       = comparison?.bests || {};
     const recommended = comparison?.recommended || null;
+    const dataSource  = comparison?.dataSource || 'responses';
+    const isCatalog   = dataSource === 'catalog';
 
     const sorted = useMemo(() => {
         if (!responses.length) return [];
@@ -208,6 +210,16 @@ export default function VendorResponses() {
                                     </div>
                                 ) : (
                                     <>
+                                        {/* Catalog data notice */}
+                                        {isCatalog && (
+                                            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                                                <Zap size={14} className="text-amber-500 shrink-0" />
+                                                <p className="text-xs text-amber-700">
+                                                    <strong>Catalog Prices</strong> — No vendor has responded yet. Showing prices from vendor product listings in this category. Actual quotes may differ.
+                                                </p>
+                                            </div>
+                                        )}
+
                                         {/* Recommendation banner */}
                                         {recommended && (
                                             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
@@ -235,14 +247,23 @@ export default function VendorResponses() {
                                         {/* Comparison table */}
                                         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
                                             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                                                <h3 className="text-sm font-bold text-gray-800">Response Comparison</h3>
-                                                <span className="text-xs text-gray-400">{responses.length} vendor{responses.length !== 1 ? 's' : ''} responded</span>
+                                                <h3 className="text-sm font-bold text-gray-800">
+                                                    {isCatalog ? 'Catalog Price Comparison' : 'Response Comparison'}
+                                                </h3>
+                                                <span className="text-xs text-gray-400">
+                                                    {isCatalog
+                                                        ? `${responses.length} vendor${responses.length !== 1 ? 's' : ''} in catalog`
+                                                        : `${responses.length} vendor${responses.length !== 1 ? 's' : ''} responded`}
+                                                </span>
                                             </div>
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-sm">
                                                     <thead>
                                                         <tr className="bg-gray-50 border-b border-gray-100">
                                                             <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Vendor</th>
+                                                            {isCatalog && (
+                                                                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
+                                                            )}
                                                             {[
                                                                 { field: 'price',    label: 'Base Price',   icon: DollarSign  },
                                                                 { field: null,       label: 'Discount',     icon: TrendingDown },
@@ -285,6 +306,11 @@ export default function VendorResponses() {
                                                                             </div>
                                                                         </div>
                                                                     </td>
+                                                                    {isCatalog && (
+                                                                        <td className="px-4 py-4">
+                                                                            <p className="text-xs font-medium text-gray-600 max-w-[140px] truncate" title={resp.productName}>{resp.productName || '—'}</p>
+                                                                        </td>
+                                                                    )}
                                                                     <td className="px-4 py-4 text-right">
                                                                         <p className="font-semibold text-gray-800">₹{resp.price?.toLocaleString('en-IN')}</p>
                                                                         <p className="text-xs text-gray-400">Effective: ₹{resp.effectivePrice?.toLocaleString('en-IN')}</p>

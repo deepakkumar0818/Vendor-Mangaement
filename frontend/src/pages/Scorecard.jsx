@@ -95,7 +95,6 @@ function VendorCard({ vendor }) {
                 </div>
             </div>
 
-            {/* Score dimensions */}
             <div className="space-y-2">
                 {dims.map(d => (
                     <div key={d.label}>
@@ -110,7 +109,6 @@ function VendorCard({ vendor }) {
                 ))}
             </div>
 
-            {/* Joined date */}
             <p className="text-xs text-gray-300 -mt-1">Onboarded: {vendor.createdAt}</p>
         </div>
     );
